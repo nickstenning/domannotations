@@ -20,17 +20,20 @@ buster.testCase('polyfill', {
 });
 
 buster.testCase('Annotations', {
+    setUp: function () {
+        this.annotations = new Annotations();
+    },
     '.createAnnotation()': {
         'returns a new annotation object': function () {
-            var ann = Annotations.createAnnotation();
+            var ann = this.annotations.createAnnotation();
             assert.hasPrototype(ann, Annotation.prototype);
         },
 
         'sets the annotation contextDocument': function () {
             var d = h.fakeDocument();
-            Annotations.contextDocument = d;
+            this.annotations.contextDocument = d;
 
-            var ann = Annotations.createAnnotation();
+            var ann = this.annotations.createAnnotation();
             assert.same(ann.contextDocument, d);
         }
     },
