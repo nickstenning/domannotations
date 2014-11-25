@@ -3,15 +3,8 @@ var assert = buster.assert;
 var refute = buster.refute;
 var sinon = buster.sinon;
 
-var h = require('./helpers');
-
 var Annotation = require('../lib/annotation').Annotation;
 
-function eventOfType(type) {
-    return sinon.match(function (value) {
-        return value.type === type;
-    }, "event of type '" + type + "'");
-}
 
 buster.testCase('Annotation', {
     'constructor': {
@@ -32,46 +25,23 @@ buster.testCase('Annotation', {
             assert.same(a.targets[0], t);
         },
 
-        'triggers annotationcreate event if new': function () {
-            var a = new Annotation();
-            var d = h.fakeDocument();
+        'runs onchange callback': function () {
+            var c = sinon.spy();
+            var a = new Annotation(c);
             var t = {};
 
-            a.contextDocument = d;
             a.addTarget(t);
-
-            assert.calledOnceWith(
-                d.dispatchEvent,
-                eventOfType('annotationcreate')
-            );
-        },
-
-        'triggers annotationupdate event if not new': function () {
-            var a = new Annotation();
-            var d = h.fakeDocument();
-            var t1 = {};
-            var t2 = {};
-
-            a.contextDocument = d;
-            a.addTarget(t1);
-            d.dispatchEvent.reset();
-            a.addTarget(t2);
-
-            assert.calledOnceWith(
-                d.dispatchEvent,
-                eventOfType('annotationupdate')
-            );
+            assert.calledOnceWith(c, a);
         }
     },
 
     '#removeTarget()': {
         setUp: function () {
-            this.annotation = new Annotation();
-            this.document = h.fakeDocument();
+            this.onchange = sinon.spy();
+            this.annotation = new Annotation(this.onchange);
             this.target = {};
-
             this.annotation.addTarget(this.target);
-            this.annotation.contextDocument = this.document;
+            this.onchange.reset();
         },
 
         'removes a target from the list of targets': function () {
@@ -80,13 +50,10 @@ buster.testCase('Annotation', {
             assert.equals(this.annotation.targets.length, 0);
         },
 
-        'triggers annotationupdate events when nodes are removed': function () {
+        'runs onchange callback': function () {
             this.annotation.removeTarget(this.target);
 
-            assert.calledOnceWith(
-                this.document.dispatchEvent,
-                eventOfType('annotationupdate')
-            );
+            assert.calledOnceWith(this.onchange, this.annotation);
         }
     },
 
@@ -100,43 +67,24 @@ buster.testCase('Annotation', {
             assert.same(a.bodies[0], b);
         },
 
-        'triggers annotationcreate event if new': function () {
-            var a = new Annotation();
-            var d = h.fakeDocument();
+        'runs onchange callback': function () {
+            var c = sinon.spy();
+            var a = new Annotation(c);
             var t = {};
 
-            a.contextDocument = d;
             a.addBody(t);
 
-            assert.calledOnceWith(
-                d.dispatchEvent,
-                eventOfType('annotationcreate')
-            );
-        },
-
-        'triggers annotationupdate event if not new': function () {
-            var a = new Annotation();
-            var d = h.fakeDocument();
-            var b1 = {};
-            var b2 = {};
-
-            a.contextDocument = d;
-            a.addBody(b1);
-            d.dispatchEvent.reset();
-            a.addBody(b2);
-
-            assert.calledOnceWith(
-                d.dispatchEvent,
-                eventOfType('annotationupdate')
-            );
+            assert.calledOnceWith(c, a);
         }
     },
 
     '#removeBody()': {
         setUp: function () {
-            this.annotation = new Annotation();
+            this.onchange = sinon.spy();
+            this.annotation = new Annotation(this.onchange);
             this.body = {};
             this.annotation.addBody(this.body);
+            this.onchange.reset();
         },
 
         'removes a body from the list of bodies': function () {
@@ -145,16 +93,10 @@ buster.testCase('Annotation', {
             assert.equals(this.annotation.bodies.length, 0);
         },
 
-        'triggers annotationupdate events on target nodes': function () {
-            var d = h.fakeDocument();
-
-            this.annotation.contextDocument = d;
+        'runs onchange callback': function () {
             this.annotation.removeBody(this.body);
 
-            assert.calledOnceWith(
-                d.dispatchEvent,
-                eventOfType('annotationupdate')
-            );
+            assert.calledOnceWith(this.onchange, this.annotation);
         }
     },
 

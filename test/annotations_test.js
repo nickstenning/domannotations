@@ -1,10 +1,10 @@
 var buster = require('buster');
 var assert = buster.assert;
 var refute = buster.refute;
+var sinon = buster.sinon;
 
 var h = require('./helpers');
 
-var Annotation = require('../lib/annotation').Annotation;
 var Annotations = require('../lib/annotations').Annotations;
 var polyfill = require('../lib/annotations').polyfill;
 
@@ -21,21 +21,43 @@ buster.testCase('polyfill', {
 
 buster.testCase('Annotations', {
     setUp: function () {
-        this.annotations = new Annotations();
+        this.document = h.fakeDocument();
+        this.annotations = new Annotations(FakeAnnotation, this.document);
     },
 
     '.create()': {
         'returns a new annotation object': function () {
             var ann = this.annotations.create();
-            assert.hasPrototype(ann, Annotation.prototype);
+            assert.hasPrototype(ann, FakeAnnotation.prototype);
         },
 
-        'sets the annotation contextDocument': function () {
-            var d = h.fakeDocument();
-            this.annotations.contextDocument = d;
-
+        'fires an annotationcreate event': function () {
             var ann = this.annotations.create();
-            assert.same(ann.contextDocument, d);
+            assert.calledOnceWith(
+                this.document.dispatchEvent,
+                eventOfType('annotationcreate')
+            );
+        },
+
+        'sets up appropriate change handlers': function () {
+            var ann = this.annotations.create();
+            this.document.dispatchEvent.reset();
+            ann.onchange(ann);
+
+            assert.calledOnceWith(
+                this.document.dispatchEvent,
+                eventOfType('annotationupdate')
+            );
         }
     },
 });
+
+function FakeAnnotation(onchange) {
+    this.onchange = onchange;
+}
+
+function eventOfType(type) {
+    return sinon.match(function (value) {
+        return value.type === type;
+    }, "event of type '" + type + "'");
+}
