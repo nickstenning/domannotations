@@ -46,7 +46,7 @@ buster.testCase('Annotations', {
 
             assert.calledOnceWith(
                 this.document.dispatchEvent,
-                eventOfType('annotationupdate')
+                eventOfType('annotationchange')
             );
         }
     },
