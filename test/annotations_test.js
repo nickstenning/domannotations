@@ -2,6 +2,8 @@ var buster = require('buster');
 var assert = buster.assert;
 var refute = buster.refute;
 
+var h = require('./helpers');
+
 var Annotation = require('../lib/annotation').Annotation;
 var Annotations = require('../lib/annotations').Annotations;
 var polyfill = require('../lib/annotations').polyfill;
@@ -22,6 +24,14 @@ buster.testCase('Annotations', {
         'returns a new annotation object': function () {
             var ann = Annotations.createAnnotation();
             assert.hasPrototype(ann, Annotation.prototype);
+        },
+
+        'sets the annotation contextDocument': function () {
+            var d = h.fakeDocument();
+            Annotations.contextDocument = d;
+
+            var ann = Annotations.createAnnotation();
+            assert.same(ann.contextDocument, d);
         }
     },
 });

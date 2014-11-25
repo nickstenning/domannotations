@@ -3,25 +3,9 @@ var assert = buster.assert;
 var refute = buster.refute;
 var sinon = buster.sinon;
 
+var h = require('./helpers');
+
 var Annotation = require('../lib/annotation').Annotation;
-
-function FakeEvent() {}
-
-FakeEvent.prototype.initCustomEvent = function initCustomEvent(type, bubbles, cancelable, detail) {
-    this.type = type;
-    this.bubbles = bubbles;
-    this.cancelable = cancelable;
-    this.detail = detail;
-};
-
-function fakeDocument() {
-    return {
-        createEvent: function () {
-            return new FakeEvent();
-        },
-        dispatchEvent: sinon.spy()
-    };
-}
 
 function eventOfType(type) {
     return sinon.match(function (value) {
@@ -50,7 +34,7 @@ buster.testCase('Annotation', {
 
         'triggers annotationcreate event if new': function () {
             var a = new Annotation();
-            var d = fakeDocument();
+            var d = h.fakeDocument();
             var t = {};
 
             a.contextDocument = d;
@@ -64,7 +48,7 @@ buster.testCase('Annotation', {
 
         'triggers annotationupdate event if not new': function () {
             var a = new Annotation();
-            var d = fakeDocument();
+            var d = h.fakeDocument();
             var t1 = {};
             var t2 = {};
 
@@ -83,7 +67,7 @@ buster.testCase('Annotation', {
     '#removeTarget()': {
         setUp: function () {
             this.annotation = new Annotation();
-            this.document = fakeDocument();
+            this.document = h.fakeDocument();
             this.target = {};
 
             this.annotation.addTarget(this.target);
@@ -118,7 +102,7 @@ buster.testCase('Annotation', {
 
         'triggers annotationcreate event if new': function () {
             var a = new Annotation();
-            var d = fakeDocument();
+            var d = h.fakeDocument();
             var t = {};
 
             a.contextDocument = d;
@@ -132,7 +116,7 @@ buster.testCase('Annotation', {
 
         'triggers annotationupdate event if not new': function () {
             var a = new Annotation();
-            var d = fakeDocument();
+            var d = h.fakeDocument();
             var b1 = {};
             var b2 = {};
 
@@ -162,7 +146,7 @@ buster.testCase('Annotation', {
         },
 
         'triggers annotationupdate events on target nodes': function () {
-            var d = fakeDocument();
+            var d = h.fakeDocument();
 
             this.annotation.contextDocument = d;
             this.annotation.removeBody(this.body);
