@@ -1,0 +1,18 @@
+{
+  "name": "domannotations",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "buster": "^0.7.17"
+  },
+  "scripts": {
+    "test": "buster-test"
+  },
+  "author": "",
+  "license": "MIT"
+}
