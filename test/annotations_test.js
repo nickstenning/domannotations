@@ -23,9 +23,10 @@ buster.testCase('Annotations', {
     setUp: function () {
         this.annotations = new Annotations();
     },
-    '.createAnnotation()': {
+
+    '.create()': {
         'returns a new annotation object': function () {
-            var ann = this.annotations.createAnnotation();
+            var ann = this.annotations.create();
             assert.hasPrototype(ann, Annotation.prototype);
         },
 
@@ -33,7 +34,7 @@ buster.testCase('Annotations', {
             var d = h.fakeDocument();
             this.annotations.contextDocument = d;
 
-            var ann = this.annotations.createAnnotation();
+            var ann = this.annotations.create();
             assert.same(ann.contextDocument, d);
         }
     },
