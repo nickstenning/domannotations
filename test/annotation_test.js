@@ -100,24 +100,6 @@ buster.testCase('Annotation', {
         }
     },
 
-    '#nodes': {
-        'is an array of nodes referenced by the annotation': function () {
-            var ann = new Annotation();
-            var n1 = {}, n2 = {}, n3 = {};
-            var t1 = {nodes: [n1, n2]};
-            var t2 = {nodes: [n3]};
-            var t3 = {};
-            ann.addTarget(t1);
-            ann.addTarget(t2);
-            ann.addTarget(t3);
-
-            assert.equals(ann.nodes.length, 3);
-            assert.contains(ann.nodes, n1);
-            assert.contains(ann.nodes, n2);
-            assert.contains(ann.nodes, n3);
-        }
-    },
-
     '#toJSON()': {
         setUp: function () {
             this.annotation = new Annotation();
