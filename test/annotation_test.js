@@ -31,7 +31,10 @@ buster.testCase('Annotation', {
             var t = {};
 
             a.addTarget(t);
-            assert.calledOnceWith(c, a);
+            assert.calledOnceWith(c, {
+                target: a,
+                addedTargets: [t]
+            });
         }
     },
 
@@ -53,7 +56,10 @@ buster.testCase('Annotation', {
         'runs onchange callback': function () {
             this.annotation.removeTarget(this.target);
 
-            assert.calledOnceWith(this.onchange, this.annotation);
+            assert.calledOnceWith(this.onchange, {
+                target: this.annotation,
+                removedTargets: [this.target]
+            });
         }
     },
 
@@ -74,7 +80,9 @@ buster.testCase('Annotation', {
 
             a.addBody(t);
 
-            assert.calledOnceWith(c, a);
+            assert.calledOnceWith(c, {
+                target: a
+            });
         }
     },
 
@@ -96,7 +104,9 @@ buster.testCase('Annotation', {
         'runs onchange callback': function () {
             this.annotation.removeBody(this.body);
 
-            assert.calledOnceWith(this.onchange, this.annotation);
+            assert.calledOnceWith(this.onchange, {
+                target: this.annotation
+            });
         }
     },
 

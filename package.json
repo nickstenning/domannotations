@@ -6,7 +6,9 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "ramda": "^0.8.0"
+  },
   "devDependencies": {
     "buster": "^0.7.17"
   },
