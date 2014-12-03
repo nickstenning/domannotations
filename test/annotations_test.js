@@ -31,25 +31,6 @@ buster.testCase('Annotations', {
         'returns a new annotation object': function () {
             var ann = this.annotations.create();
             assert.hasPrototype(ann, FakeAnnotation.prototype);
-        },
-
-        'fires an annotationcreate event': function () {
-            var ann = this.annotations.create();
-            assert.calledOnceWith(
-                this.document.dispatchEvent,
-                eventOfType('annotationcreate')
-            );
-        },
-
-        'sets up appropriate change handlers': function () {
-            var ann = this.annotations.create();
-            this.document.dispatchEvent.reset();
-            ann.change({target: ann});
-
-            assert.calledOnceWith(
-                this.document.dispatchEvent,
-                eventOfType('annotationchange')
-            );
         }
     },
 
@@ -120,7 +101,6 @@ buster.testCase('Annotations', {
             this.node = {};
             this.ann = this.annotations.create();
             this.ann.addTarget(new FakeTarget([this.node]));
-            this.document.dispatchEvent.reset();
         },
 
         'removes that annotation from the referenced nodes': function () {
@@ -141,23 +121,61 @@ buster.testCase('Annotations', {
             results = this.annotations.get([node2]);
             assert.equals(results.length, 0);
         },
+    },
 
-        'fires an annotationremove event': function () {
-            this.annotations.remove(this.ann);
+    'events': {
+        'creating an annotation': {
+            'fires an annotationcreate event': function () {
+                var ann = this.annotations.create();
 
-            assert.calledOnceWith(
-                this.document.dispatchEvent,
-                eventOfType('annotationremove')
-            );
+                assert.calledOnceWith(
+                    this.document.dispatchEvent,
+                    eventOfType('annotationcreate')
+                );
+            }
         },
+
+        'changing an annotation': {
+            'setUp': function () {
+                this.ann = this.annotations.create();
+                this.document.dispatchEvent.reset();
+            },
+
+            'fires an annotationchange event': function () {
+                this.ann.change();
+
+                assert.calledOnceWith(
+                    this.document.dispatchEvent,
+                    eventOfType('annotationchange')
+                );
+            }
+        },
+
+        'removing an annotation': {
+            'setUp': function () {
+                this.ann = this.annotations.create();
+                this.document.dispatchEvent.reset();
+            },
+
+            'fires an annotationremove event': function () {
+                this.annotations.remove(this.ann);
+
+                assert.calledOnceWith(
+                    this.document.dispatchEvent,
+                    eventOfType('annotationremove')
+                );
+            },
+        }
     }
 });
 
 function FakeAnnotation(onchange) {
     this._onchange = onchange;
+    this.targets = [];
 }
 
 FakeAnnotation.prototype.change = function change(obj) {
+    obj = obj || {};
     obj.target = this;
     this._onchange(obj);
 };
