@@ -130,7 +130,10 @@ buster.testCase('Annotations', {
 
                 assert.calledOnceWith(
                     this.document.dispatchEvent,
-                    eventOfType('annotationcreate')
+                    sinon.match
+                    .has('type', 'annotationcreate')
+                    .and(sinon.match
+                    .has('detail', sinon.match({target: ann})))
                 );
             }
         },
@@ -146,7 +149,10 @@ buster.testCase('Annotations', {
 
                 assert.calledOnceWith(
                     this.document.dispatchEvent,
-                    eventOfType('annotationchange')
+                    sinon.match
+                    .has('type', 'annotationchange')
+                    .and(sinon.match
+                    .has('detail', sinon.match({target: this.ann})))
                 );
             }
         },
@@ -162,7 +168,10 @@ buster.testCase('Annotations', {
 
                 assert.calledOnceWith(
                     this.document.dispatchEvent,
-                    eventOfType('annotationremove')
+                    sinon.match
+                    .has('type', 'annotationremove')
+                    .and(sinon.match
+                    .has('detail', sinon.match({target: this.ann})))
                 );
             },
         }
@@ -188,4 +197,10 @@ function eventOfType(type) {
     return sinon.match(function (value) {
         return value.type === type;
     }, "event of type '" + type + "'");
+}
+
+function eventWithDetail(detail) {
+    return sinon.match(function (value) {
+        return sinon.match.has('detail', sinon.match(value));
+    }, "event with detail matching '" + JSON.stringify(detail) + "'");
 }
