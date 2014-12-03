@@ -5,6 +5,7 @@ var sinon = buster.sinon;
 
 var h = require('./helpers');
 
+var Annotation = require('../lib/annotation').Annotation;
 var Annotations = require('../lib/annotations').Annotations;
 var ExpandoCache = require('../lib/annotations').ExpandoCache;
 var polyfill = require('../lib/annotations').polyfill;
@@ -111,6 +112,44 @@ buster.testCase('Annotations', {
             assert.equals(results.length, 1);
             assert.contains(results, ann1);
         }
+    },
+
+    '.remove()': {
+        'setUp': function () {
+            this.annotations = new Annotations(Annotation, this.document);
+            this.node = {};
+            this.ann = this.annotations.create();
+            this.ann.addTarget(new FakeTarget([this.node]));
+            this.document.dispatchEvent.reset();
+        },
+
+        'removes that annotation from the referenced nodes': function () {
+            this.annotations.remove(this.ann);
+
+            var results = this.annotations.get([this.node]);
+            assert.equals(results.length, 0);
+        },
+
+        'removes that annotation from the referenced nodes (multiple nodes)': function () {
+            node2 = {};
+            this.ann.addTarget(new FakeTarget([node2]));
+
+            this.annotations.remove(this.ann);
+
+            var results = this.annotations.get([this.node]);
+            assert.equals(results.length, 0);
+            results = this.annotations.get([node2]);
+            assert.equals(results.length, 0);
+        },
+
+        'fires an annotationremove event': function () {
+            this.annotations.remove(this.ann);
+
+            assert.calledOnceWith(
+                this.document.dispatchEvent,
+                eventOfType('annotationremove')
+            );
+        },
     }
 });
 
