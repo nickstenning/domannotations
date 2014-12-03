@@ -10,6 +10,7 @@
     "ramda": "^0.8.0"
   },
   "devDependencies": {
+    "browserify": "^6.3.3",
     "buster": "^0.7.17"
   },
   "scripts": {
