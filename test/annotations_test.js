@@ -7,19 +7,6 @@ var h = require('./helpers');
 
 var Annotation = require('../lib/annotation').Annotation;
 var Annotations = require('../lib/annotations').Annotations;
-var ExpandoCache = require('../lib/annotations').ExpandoCache;
-var polyfill = require('../lib/annotations').polyfill;
-
-buster.testCase('polyfill', {
-    'makes the public functions available in the given global context': function () {
-        var myglobal = {
-            document: {}
-        };
-        polyfill(myglobal);
-
-        assert.isFunction(myglobal.document.createAnnotation);
-    }
-});
 
 buster.testCase('Annotations', {
     setUp: function () {
