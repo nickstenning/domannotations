@@ -43,7 +43,7 @@ buster.testCase('Annotations', {
         'sets up appropriate change handlers': function () {
             var ann = this.annotations.create();
             this.document.dispatchEvent.reset();
-            ann.onchange({target: ann});
+            ann.change({target: ann});
 
             assert.calledOnceWith(
                 this.document.dispatchEvent,
@@ -62,8 +62,7 @@ buster.testCase('Annotations', {
         'returns any annotations that reference the passed nodes': function () {
             var node = {};
             var ann = this.annotations.create();
-            ann.onchange({
-                target: ann,
+            ann.change({
                 addedTargets: [new FakeTarget([node])]
             });
 
@@ -77,12 +76,10 @@ buster.testCase('Annotations', {
             var node = {};
             var ann1 = this.annotations.create();
             var ann2 = this.annotations.create();
-            ann1.onchange({
-                target: ann1,
+            ann1.change({
                 addedTargets: [new FakeTarget([node])]
             });
-            ann2.onchange({
-                target: ann2,
+            ann2.change({
                 addedTargets: [new FakeTarget([node])]
             });
 
@@ -98,16 +95,13 @@ buster.testCase('Annotations', {
             var node2 = {};
             var ann1 = this.annotations.create();
             var ann2 = this.annotations.create();
-            ann1.onchange({
-                target: ann1,
+            ann1.change({
                 addedTargets: [new FakeTarget([node1])]
             });
-            ann2.onchange({
-                target: ann2,
+            ann2.change({
                 addedTargets: [new FakeTarget([node1])]
             });
-            ann2.onchange({
-                target: ann2,
+            ann2.change({
                 removedTargets: [new FakeTarget([node1])],
                 addedTargets: [new FakeTarget([node2])]
             });
@@ -121,8 +115,13 @@ buster.testCase('Annotations', {
 });
 
 function FakeAnnotation(onchange) {
-    this.onchange = onchange;
+    this._onchange = onchange;
 }
+
+FakeAnnotation.prototype.change = function change(obj) {
+    obj.target = this;
+    this._onchange(obj);
+};
 
 function FakeTarget(nodes) {
     this.nodes = nodes;
