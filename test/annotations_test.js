@@ -154,6 +154,16 @@ buster.testCase('Annotations', {
                     .and(sinon.match
                     .has('detail', sinon.match({target: this.ann})))
                 );
+            },
+
+            'forwards event detail from the annotation': function () {
+                this.ann.change({foo: 'bar'});
+
+                assert.calledOnceWith(
+                    this.document.dispatchEvent,
+                    sinon.match
+                    .has('detail', sinon.match({foo: 'bar'}))
+                );
             }
         },
 
