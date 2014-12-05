@@ -103,24 +103,61 @@
     Annotations.polyfill(window);
 
     document.addEventListener("mouseup", checkForSelection, false);
-    document.addEventListener("annotationremove", annotationRemoved, false);
     document.addEventListener("annotationchange", annotationChanged, false);
+    document.addEventListener("annotationremove", annotationRemoved, false);
     document.addEventListener("click", highlightClicked, false);
 
     function checkForSelection() {
         var selection = window.getSelection();
-        if (selection && !selection.isCollapsed) {
-            var ann = document.createAnnotation();
-            for (var i = 0, len = selection.rangeCount; i < len; i++) {
-                var tgt = new Annotations.TextTarget(selection.getRangeAt(i));
-                ann.addTarget(tgt);
+        if (!selection.isCollapsed) {
+            var tgt = new Annotations.TextTarget(selection.getRangeAt(0));
+
+            // Ignore overlapping highlight attempts
+            for (var i = 0, len = tgt.nodes.length; i < len; i++) {
+                var parent = tgt.nodes[i].parentNode;
+                if (parent.classList.contains('highlight')) {
+                    return;
+                }
             }
+
+            var ann = document.createAnnotation();
+            ann.addTarget(tgt);
+            selection.removeAllRanges();
+        }
+    }
+
+    function annotationChanged(event) {
+        var ann = event.detail.target;
+        var added = event.detail.addedTargets || [];
+
+        added.forEach(function (t) {
+            if (isTargetExact(t)) {
+                addHighlights(t);
+            } else {
+                splitTarget(t, ann);
+            }
+        });
+    }
+
+    function annotationRemoved(event) {
+        var ann = event.detail.target;
+        ann.targets.forEach(removeHighlights);
+    }
+
+    function highlightClicked(event) {
+        var selection = window.getSelection();
+        if (!selection.isCollapsed) { return; }
+
+        var node = event.target;
+        if (node.classList.contains('highlight')) {
+            var ann = document.getAnnotations([node.firstChild])[0];
+            document.removeAnnotation(ann);
         }
     }
 
     function isTargetExact(t) {
-      var last = t.nodes[t.nodes.length - 1];
-      return t._startOffset === 0 && last.length === t._endOffset;
+        var last = t.nodes[t.nodes.length - 1];
+        return t._startOffset === 0 && last.length === t._endOffset;
     }
 
     function splitTarget(t, ann) {
@@ -132,9 +169,10 @@
         last.splitText(t._endOffset);
         first = first.splitText(t._startOffset);
 
-        // Need to update the last node if there is only one, otherwise we'll be out of order.
+        // Need to update the last node if there is only one, otherwise we'll be
+        // out of order.
         if (nodes.length === 1) {
-          last = first;
+            last = first;
         }
 
         ann.removeTarget(t);
@@ -147,63 +185,30 @@
         ann.addTarget(target);
     }
 
-    function removeHighlight(t) {
-      // var shouldRemove = document.getAnnotations(t.nodes).some(function (a) {
-      //   return a.targets.indexOf(t) > -1;
-      // });
-      //
-      // if (!shouldRemove) return;
-
-      t.nodes.forEach(function (n) {
-        var hl = n.parentNode;
-        if (hl.classList.contains('highlight')) {
-          [].slice.call(hl.childNodes).forEach(function (c) {
-            hl.parentNode.insertBefore(c, hl);
-          });
-          hl.parentNode.removeChild(hl);
-        }
-      });
+    function addHighlights(t) {
+        t.nodes.forEach(function (n) {
+            wrapWithHighlight(n);
+        });
     }
 
-    function addHighlight(t) {
-      [].forEach.call(t.nodes, function (n) {
+    function removeHighlights(t) {
+        t.nodes.forEach(function (n) {
+            replaceWithChildren(n.parentNode);
+        });
+    }
+
+    function replaceWithChildren(node) {
+        [].slice.call(node.childNodes).forEach(function (c) {
+            node.parentNode.insertBefore(c, node);
+        });
+        node.parentNode.removeChild(node);
+    }
+
+    function wrapWithHighlight(node) {
         var hl = document.createElement('span');
         hl.classList.add('highlight');
-        n.parentNode.insertBefore(hl, n);
-        hl.appendChild(n);
-      });
-    }
-
-    function annotationChanged(event) {
-      var ann = event.detail.target;
-      var added = event.detail.addedTargets || [];
-      var removed = event.detail.removedTargets || [];
-
-      added.forEach(function (t) {
-        if (isTargetExact(t)) {
-          addHighlight(t);
-        } else {
-          splitTarget(t, ann);
-        }
-      });
-
-      removed.forEach(function (t) {
-        if (isTargetExact(t)) {
-          removeHighlight(t);
-        }
-      });
-    }
-
-    function annotationRemoved(event) {
-      var ann = event.detail.target;
-      ann.targets.forEach(removeHighlight);
-    }
-
-    function highlightClicked(event) {
-      if (event.target.classList.contains('highlight')) {
-        var anns = document.getAnnotations([].slice.apply(event.target.childNodes));
-        anns.forEach(document.removeAnnotation);
-      }
+        node.parentNode.insertBefore(hl, node);
+        hl.appendChild(node);
     }
 }());
   </script>
