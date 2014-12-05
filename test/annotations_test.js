@@ -79,7 +79,21 @@ buster.testCase('Annotations', {
 
             assert.equals(results.length, 1);
             assert.contains(results, ann1);
-        }
+        },
+
+        'returns any annotations that reference the passed nodes (non-matching nodes)': function () {
+            var node1 = {};
+            var node2 = {};
+            var ann = this.annotations.create();
+            ann.change({
+                addedTargets: [new FakeTarget([node1])]
+            });
+
+            var results = this.annotations.get([node1, node2]);
+
+            assert.equals(results.length, 1);
+            assert.contains(results, ann);
+        },
     },
 
     '.remove()': {
