@@ -103,8 +103,9 @@
     Annotations.polyfill(window);
 
     document.addEventListener("mouseup", checkForSelection, false);
-    document.addEventListener("annotationcreate", annotationCreated, false);
+    document.addEventListener("annotationremove", annotationRemoved, false);
     document.addEventListener("annotationchange", annotationChanged, false);
+    document.addEventListener("click", highlightClicked, false);
 
     function checkForSelection() {
         var selection = window.getSelection();
@@ -117,15 +118,92 @@
         }
     }
 
-    function annotationCreated(event) {
-        console.log("annotation created", event.detail);
+    function isTargetExact(t) {
+      var last = t.nodes[t.nodes.length - 1];
+      return t._startOffset === 0 && last.length === t._endOffset;
+    }
+
+    function splitTarget(t, ann) {
+        var nodes = t.nodes;
+        var first = nodes[0];
+        var last  = nodes[nodes.length - 1];
+
+        // Split the last node first to ensure the offset is correct.
+        last.splitText(t._endOffset);
+        first = first.splitText(t._startOffset);
+
+        // Need to update the last node if there is only one, otherwise we'll be out of order.
+        if (nodes.length === 1) {
+          last = first;
+        }
+
+        ann.removeTarget(t);
+
+        var range = document.createRange();
+        range.setStart(first, 0);
+        range.setEnd(last, last.length);
+
+        var target = new Annotations.TextTarget(range);
+        ann.addTarget(target);
+    }
+
+    function removeHighlight(t) {
+      // var shouldRemove = document.getAnnotations(t.nodes).some(function (a) {
+      //   return a.targets.indexOf(t) > -1;
+      // });
+      //
+      // if (!shouldRemove) return;
+
+      t.nodes.forEach(function (n) {
+        var hl = n.parentNode;
+        if (hl.classList.contains('highlight')) {
+          [].slice.call(hl.childNodes).forEach(function (c) {
+            hl.parentNode.insertBefore(c, hl);
+          });
+          hl.parentNode.removeChild(hl);
+        }
+      });
+    }
+
+    function addHighlight(t) {
+      [].forEach.call(t.nodes, function (n) {
+        var hl = document.createElement('span');
+        hl.classList.add('highlight');
+        n.parentNode.insertBefore(hl, n);
+        hl.appendChild(n);
+      });
     }
 
     function annotationChanged(event) {
-        console.log("annotation changed", event.detail);
-        console.log("annotation JSON",
-            JSON.stringify(event.detail.target, null, 2)
-        );
+      var ann = event.detail.target;
+      var added = event.detail.addedTargets || [];
+      var removed = event.detail.removedTargets || [];
+
+      added.forEach(function (t) {
+        if (isTargetExact(t)) {
+          addHighlight(t);
+        } else {
+          splitTarget(t, ann);
+        }
+      });
+
+      removed.forEach(function (t) {
+        if (isTargetExact(t)) {
+          removeHighlight(t);
+        }
+      });
+    }
+
+    function annotationRemoved(event) {
+      var ann = event.detail.target;
+      ann.targets.forEach(removeHighlight);
+    }
+
+    function highlightClicked(event) {
+      if (event.target.classList.contains('highlight')) {
+        var anns = document.getAnnotations([].slice.apply(event.target.childNodes));
+        anns.forEach(document.removeAnnotation);
+      }
     }
 }());
   </script>
