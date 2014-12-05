@@ -12,9 +12,9 @@
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
     }
-    article {
+    header, article {
       width: 740px;
-      margin: 4em auto;
+      margin: 2em auto;
     }
     .highlight {
       background: rgba(255, 255, 10, 0.3);
@@ -22,6 +22,15 @@
   </style>
 </head>
 <body>
+  <header>
+    <p>
+      <small><em>
+        Select to highlight.
+        Click to delete.
+        <a href="#" id="dump">Dump annotations to console</a>.
+      </em></small>
+    </p>
+  </header>
   <article>
     <p>
       He was an old man who fished alone in a skiff in the Gulf Stream and he
@@ -106,6 +115,7 @@
     document.addEventListener("annotationchange", annotationChanged, false);
     document.addEventListener("annotationremove", annotationRemoved, false);
     document.addEventListener("click", highlightClicked, false);
+    document.querySelector('#dump').addEventListener("click", dumpAll, false);
 
     function checkForSelection() {
         var selection = window.getSelection();
@@ -153,6 +163,17 @@
             var ann = document.getAnnotations([node.firstChild])[0];
             document.removeAnnotation(ann);
         }
+    }
+
+    function dumpAll(event) {
+        event.preventDefault();
+        var article = document.querySelector('article');
+        var allTextNodes = textNodes(article);
+        var annotations = document.getAnnotations(allTextNodes);
+        console.clear();
+        annotations.forEach(function (ann) {
+            console.log(JSON.stringify(ann, null, 2));
+        });
     }
 
     function isTargetExact(t) {
@@ -209,6 +230,21 @@
         hl.classList.add('highlight');
         node.parentNode.insertBefore(hl, node);
         hl.appendChild(node);
+    }
+
+    function textNodes(element) {
+        var result = [];
+
+        function getTextNodes(node) {
+            if (node.nodeType === 3) {
+                result.push(node);
+            } else {
+                [].forEach.call(node.childNodes, getTextNodes);
+            }
+        }
+
+        getTextNodes(element);
+        return result;
     }
 }());
   </script>
