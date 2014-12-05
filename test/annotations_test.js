@@ -94,6 +94,19 @@ buster.testCase('Annotations', {
             assert.equals(results.length, 1);
             assert.contains(results, ann);
         },
+
+        'returns any annotations that reference the passed nodes (annotation matching multiple nodes)': function () {
+            var node = {};
+            var ann = this.annotations.create();
+            ann.change({
+                addedTargets: [new FakeTarget([node])]
+            });
+
+            var results = this.annotations.get([node, node, node]);
+
+            assert.equals(results.length, 1);
+            assert.contains(results, ann);
+        },
     },
 
     '.remove()': {
